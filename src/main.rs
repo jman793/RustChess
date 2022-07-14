@@ -39,7 +39,7 @@ fn main() -> Result<(), String> {
         .expect("could not make a canvas");
 
     let texture_creator = canvas.texture_creator();
-    let texture = texture_creator.load_texture("assets/chess-board.jpg")?;
+    let texture = texture_creator.load_texture("assets/board1.png")?;
 
     let mut events = sdl_context.event_pump()?;
 
