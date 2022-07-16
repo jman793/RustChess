@@ -1,65 +1,59 @@
+use crate::{square, pieceType, squareName};
 use sdl2::rect::Point;
 
-enum Color {
+#[derive(Copy, Clone)]
+pub(crate) enum Color {
     WHITE,
     BLACK,
 }
 
-enum PieceType {
-    KNIGHT,
-    QUEEN,
-    PAWN,
-    BISHOP,
-    ROOK,
-    KING,
-}
 
-//position is where a piece goes (center of square)
-pub struct Square {
-    position: Point,
-    color: Color,
-    name: String,
-    is_occupied: bool
-}
 
-pub struct Piece {
-    square: Square,
+pub(crate) struct Piece {
+    square: squareName::SquareName,
     color: Color,
-    piece_type: PieceType,
+    piece_type: pieceType::PieceType,
     is_taken: bool,
+    pub(crate) position: Point
 }
 
-fn get_pieces() {
-
-}
-
-pub fn initialize_squares() -> Vec<Square> {
-    (0..64)
-    .map(|i| Square {
-        position: Point::new(6+13*i, 5+9*(i/8)),
-        color: if i%2==0 {Color::BLACK} else {Color::WHITE},
-        name: calc_square_name(i),
-        is_occupied: if (0..15).contains(&i) || (47..63).contains(&i) {true} else {false}       
+pub(crate) fn get_pieces(squares: &Vec<square::Square>, is_white: bool) -> Vec<Piece> {
+    let range = if is_white {0..16} else {47..63};
+    range
+    .map(|i| Piece {
+        square: squares[i].square_name,
+        color: if is_white {Color::WHITE} else {Color::BLACK},
+        piece_type: get_piece_type(i),
+        is_taken: false,
+        position: squares[i].position      
     })
-    .collect::<Vec<Square>>()
+    .collect()
 }
 
-fn calc_square_name(num: i32) -> String {
-   let mut file: String = match num%8 {
-        0 => String::from("A"),
-        1 => String::from("B"),
-        2 => String::from("C"),
-        3 => String::from("D"),
-        4 => String::from("E"),
-        5 => String::from("F"),
-        6 => String::from("G"),
-        7 => String::from("H"),
-        _ => String::from("ERROR")
-    };
+//This function is probably not right but we shall see
+fn get_piece_type(i: usize) -> pieceType::PieceType {
+    let updated_i: usize = if {55..63}.contains(&i) {i-47} else {i}; 
+    match updated_i {
+        0 => pieceType::PieceType::ROOK,
+        1 => pieceType::PieceType::KNIGHT,
+        2 => pieceType::PieceType::BISHOP,
+        3 => pieceType::PieceType::QUEEN,
+        4 => pieceType::PieceType::KING,
+        5 => pieceType::PieceType::BISHOP,
+        7 => pieceType::PieceType::ROOK,
+        _ => pieceType::PieceType::PAWN 
+    }
+}
 
-    let rank: &str = &(num/8).to_string();
+impl Piece {
+    pub fn get_filename(&self) -> String {
 
-    file.push_str(rank);
+        let color_delimeter = if matches!(self.color, Color::WHITE) {String::from("W")} else {String::from("B")};
+        let folder: String = String::from("assets/");
+        const SEPARATER: &str = "_";
+        let piece_string = self.piece_type.to_string();
+        const FILE_EXT: &str = ".png";
 
-    file
+        folder + &color_delimeter + SEPARATER + &piece_string + FILE_EXT
+    }
 }
