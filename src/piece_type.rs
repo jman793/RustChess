@@ -12,7 +12,7 @@ pub enum PieceType {
 }
 
 impl fmt::Display for PieceType {
-    fn fmt (&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let printable = match *self {
             PieceType::KNIGHT => "Knight",
             PieceType::QUEEN => "Queen",

@@ -1,5 +1,4 @@
-use crate::{square, pieceType, squareName};
-use sdl2::rect::Point;
+use crate::{piece_type, square_name};
 
 #[derive(Copy, Clone)]
 pub(crate) enum Color {
@@ -7,48 +6,66 @@ pub(crate) enum Color {
     BLACK,
 }
 
-
-
 pub(crate) struct Piece {
-    square: squareName::SquareName,
+    pub(crate) square_name: square_name::SquareName,
     color: Color,
-    piece_type: pieceType::PieceType,
+    piece_type: piece_type::PieceType,
     is_taken: bool,
-    pub(crate) position: Point
 }
 
-pub(crate) fn get_pieces(squares: &Vec<square::Square>, is_white: bool) -> Vec<Piece> {
-    let range = if is_white {0..16} else {47..63};
-    range
-    .map(|i| Piece {
-        square: squares[i].square_name,
-        color: if is_white {Color::WHITE} else {Color::BLACK},
-        piece_type: get_piece_type(i),
-        is_taken: false,
-        position: squares[i].position      
-    })
-    .collect()
+// TODO write some tests for this
+pub(crate) fn init_pieces(is_white: bool) -> Vec<Piece> {
+    (0..16)
+        .map(|i| Piece {
+            square_name: if is_white {
+                square_name::SquareName::new(i + 48)
+            } else {
+                square_name::SquareName::new(i)
+            },
+            color: if is_white { Color::WHITE } else { Color::BLACK },
+            piece_type: get_piece_type(i, is_white),
+            is_taken: false,
+        })
+        .collect()
 }
 
-//This function is probably not right but we shall see
-fn get_piece_type(i: usize) -> pieceType::PieceType {
-    let updated_i: usize = if {55..63}.contains(&i) {i-47} else {i}; 
-    match updated_i {
-        0 => pieceType::PieceType::ROOK,
-        1 => pieceType::PieceType::KNIGHT,
-        2 => pieceType::PieceType::BISHOP,
-        3 => pieceType::PieceType::QUEEN,
-        4 => pieceType::PieceType::KING,
-        5 => pieceType::PieceType::BISHOP,
-        7 => pieceType::PieceType::ROOK,
-        _ => pieceType::PieceType::PAWN 
+// TODO write some tests for this
+fn get_piece_type(i: i32, is_white: bool) -> piece_type::PieceType {
+    if !is_white {
+        match i {
+            0 => piece_type::PieceType::ROOK,
+            1 => piece_type::PieceType::KNIGHT,
+            2 => piece_type::PieceType::BISHOP,
+            3 => piece_type::PieceType::QUEEN,
+            4 => piece_type::PieceType::KING,
+            5 => piece_type::PieceType::BISHOP,
+            6 => piece_type::PieceType::KNIGHT,
+            7 => piece_type::PieceType::ROOK,
+            _ => piece_type::PieceType::PAWN,
+        }
+    } else {
+        match i {
+            8 => piece_type::PieceType::ROOK,
+            9 => piece_type::PieceType::KNIGHT,
+            10 => piece_type::PieceType::BISHOP,
+            11 => piece_type::PieceType::QUEEN,
+            12 => piece_type::PieceType::KING,
+            13 => piece_type::PieceType::BISHOP,
+            14 => piece_type::PieceType::KNIGHT,
+            15 => piece_type::PieceType::ROOK,
+            _ => piece_type::PieceType::PAWN,
+        }
     }
 }
 
 impl Piece {
+    // TODO write some tests for this
     pub fn get_filename(&self) -> String {
-
-        let color_delimeter = if matches!(self.color, Color::WHITE) {String::from("W")} else {String::from("B")};
+        let color_delimeter = if matches!(self.color, Color::WHITE) {
+            String::from("W")
+        } else {
+            String::from("B")
+        };
         let folder: String = String::from("assets/");
         const SEPARATER: &str = "_";
         let piece_string = self.piece_type.to_string();
