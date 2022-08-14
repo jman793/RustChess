@@ -1,4 +1,4 @@
-use crate::{common, piece, square};
+use crate::{common::constants, game_state};
 
 use sdl2::{
     rect::{Point, Rect},
@@ -10,28 +10,27 @@ use sdl2::{
 pub(crate) fn render(
     canvas: &mut WindowCanvas,
     textures: &Vec<Texture>,
-    white_pieces: &Vec<piece::Piece>,
-    black_pieces: &Vec<piece::Piece>,
+    game_state: &game_state::GameState,
 ) -> Result<(), String> {
     canvas.clear();
 
     let mut rectangles: Vec<sdl2::rect::Rect> = Vec::new();
     rectangles.push(Rect::from_center(
-        Point::new(common::WINDOW_SIDE / 2, common::WINDOW_SIDE / 2),
-        common::WINDOW_SIDE.try_into().unwrap(),
-        common::WINDOW_SIDE.try_into().unwrap(),
+        Point::new(constants::WINDOW_SIDE / 2, constants::WINDOW_SIDE / 2),
+        constants::WINDOW_SIDE.try_into().unwrap(),
+        constants::WINDOW_SIDE.try_into().unwrap(),
     ));
 
-    for piece in white_pieces.iter() {
+    for piece in game_state.white_pieces.iter() {
         rectangles.push(Rect::from_center(
-            square::square_name_to_position(piece.square_name),
+            game_state.squares[&piece.square_name].position,
             100,
             100,
         ));
     }
-    for piece in black_pieces.iter() {
+    for piece in game_state.black_pieces.iter() {
         rectangles.push(Rect::from_center(
-            square::square_name_to_position(piece.square_name),
+            game_state.squares[&piece.square_name].position,
             100,
             100,
         ));

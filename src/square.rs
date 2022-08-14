@@ -1,53 +1,37 @@
-use crate::{common, square_name};
+use crate::{common::constants, square_name};
 use sdl2::rect::Point;
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 #[derive(Copy, Clone)]
-pub(crate) struct Square {
+pub struct Square {
     pub(crate) position: Point,
-    pub(crate) square_name: square_name::SquareName,
     pub(crate) is_occupied: bool,
-}
-
-// TODO write some tests for this
-pub(crate) fn initialize_squares() -> Vec<Square> {
-    (0..64)
-        .map(|i| Square {
-            position: square_name_to_position(square_name::SquareName::new(i)),
-            square_name: square_name::SquareName::new(i),
-            is_occupied: if (0..15).contains(&i) || (47..63).contains(&i) {
-                true
-            } else {
-                false
-            },
-        })
-        .collect::<Vec<Square>>()
 }
 
 //This is going from left to right
 // TODO write some tests for this
 pub(crate) fn square_name_to_position(square_name: square_name::SquareName) -> Point {
     let x: i32 = match square_name.file {
-        'A' => common::HORIZONTAL_OFFSET + common::SQUARE_SIZE * 7,
-        'B' => common::HORIZONTAL_OFFSET + common::SQUARE_SIZE * 6,
-        'C' => common::HORIZONTAL_OFFSET + common::SQUARE_SIZE * 5,
-        'D' => common::HORIZONTAL_OFFSET + common::SQUARE_SIZE * 4,
-        'E' => common::HORIZONTAL_OFFSET + common::SQUARE_SIZE * 3,
-        'F' => common::HORIZONTAL_OFFSET + common::SQUARE_SIZE * 2,
-        'G' => common::HORIZONTAL_OFFSET + common::SQUARE_SIZE,
-        'H' => common::HORIZONTAL_OFFSET,
+        'H' => constants::HORIZONTAL_OFFSET + constants::SQUARE_SIZE * 7,
+        'G' => constants::HORIZONTAL_OFFSET + constants::SQUARE_SIZE * 6,
+        'F' => constants::HORIZONTAL_OFFSET + constants::SQUARE_SIZE * 5,
+        'E' => constants::HORIZONTAL_OFFSET + constants::SQUARE_SIZE * 4,
+        'D' => constants::HORIZONTAL_OFFSET + constants::SQUARE_SIZE * 3,
+        'C' => constants::HORIZONTAL_OFFSET + constants::SQUARE_SIZE * 2,
+        'B' => constants::HORIZONTAL_OFFSET + constants::SQUARE_SIZE,
+        'A' => constants::HORIZONTAL_OFFSET,
         _ => panic!("Incorrect file value, {}", square_name.file),
     };
 
     let y: i32 = match square_name.rank {
-        1 => common::VERTICLE_OFFSET,
-        2 => common::VERTICLE_OFFSET + common::SQUARE_SIZE,
-        3 => common::VERTICLE_OFFSET + common::SQUARE_SIZE * 2,
-        4 => common::VERTICLE_OFFSET + common::SQUARE_SIZE * 3,
-        5 => common::VERTICLE_OFFSET + common::SQUARE_SIZE * 4,
-        6 => common::VERTICLE_OFFSET + common::SQUARE_SIZE * 5,
-        7 => common::VERTICLE_OFFSET + common::SQUARE_SIZE * 6,
-        8 => common::VERTICLE_OFFSET + common::SQUARE_SIZE * 7,
+        8 => constants::VERTICLE_OFFSET,
+        7 => constants::VERTICLE_OFFSET + constants::SQUARE_SIZE,
+        6 => constants::VERTICLE_OFFSET + constants::SQUARE_SIZE * 2,
+        5 => constants::VERTICLE_OFFSET + constants::SQUARE_SIZE * 3,
+        4 => constants::VERTICLE_OFFSET + constants::SQUARE_SIZE * 4,
+        3 => constants::VERTICLE_OFFSET + constants::SQUARE_SIZE * 5,
+        2 => constants::VERTICLE_OFFSET + constants::SQUARE_SIZE * 6,
+        1 => constants::VERTICLE_OFFSET + constants::SQUARE_SIZE * 7,
         _ => panic!("Incorrect Rank value, {}", square_name.rank),
     };
 
@@ -70,10 +54,10 @@ pub(crate) fn select_square_from_position(x: i32, y: i32) -> square_name::Square
     let mut rank: u8 = 9;
     let mut file: char = 'Z';
     for i in 0..8 {
-        if ((common::SQUARE_SIZE * i)..(common::SQUARE_SIZE * (i + 1))).contains(&y) {
+        if ((constants::SQUARE_SIZE * i)..(constants::SQUARE_SIZE * (i + 1))).contains(&y) {
             rank = (i + 1).try_into().unwrap();
         }
-        if (common::SQUARE_SIZE * i..common::SQUARE_SIZE * (i + 1)).contains(&x) {
+        if (constants::SQUARE_SIZE * i..constants::SQUARE_SIZE * (i + 1)).contains(&x) {
             file = index_to_file_map[&i];
         }
     }
@@ -97,5 +81,26 @@ pub(crate) fn select_square_from_position(x: i32, y: i32) -> square_name::Square
     square_name::SquareName {
         file: file,
         rank: rank,
+    }
+}
+
+impl Square {
+    // TODO write some tests for this
+    pub(crate) fn initialize_squares() -> HashMap<square_name::SquareName, Square> {
+        (0..64)
+            .map(|i| {
+                (
+                    square_name::SquareName::new(i),
+                    Square {
+                        position: square_name_to_position(square_name::SquareName::new(i)),
+                        is_occupied: if (0..15).contains(&i) || (47..63).contains(&i) {
+                            true
+                        } else {
+                            false
+                        },
+                    },
+                )
+            })
+            .collect()
     }
 }

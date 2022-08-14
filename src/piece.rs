@@ -1,50 +1,16 @@
-use crate::{piece_type, square_name};
+use crate::{color::Color, piece_type, square_name};
 
 #[derive(Copy, Clone)]
-pub(crate) enum Color {
-    WHITE,
-    BLACK,
-}
-
-pub(crate) struct Piece {
-    pub(crate) square_name: square_name::SquareName,
+pub struct Piece {
+    pub square_name: square_name::SquareName,
     color: Color,
     piece_type: piece_type::PieceType,
-    is_taken: bool,
 }
 
 // TODO write some tests for this
-pub(crate) fn init_pieces(is_white: bool) -> Vec<Piece> {
-    (0..16)
-        .map(|i| Piece {
-            square_name: if is_white {
-                square_name::SquareName::new(i + 48)
-            } else {
-                square_name::SquareName::new(i)
-            },
-            color: if is_white { Color::WHITE } else { Color::BLACK },
-            piece_type: get_piece_type(i, is_white),
-            is_taken: false,
-        })
-        .collect()
-}
-
-// TODO write some tests for this
-fn get_piece_type(i: i32, is_white: bool) -> piece_type::PieceType {
-    if !is_white {
-        match i {
-            0 => piece_type::PieceType::ROOK,
-            1 => piece_type::PieceType::KNIGHT,
-            2 => piece_type::PieceType::BISHOP,
-            3 => piece_type::PieceType::QUEEN,
-            4 => piece_type::PieceType::KING,
-            5 => piece_type::PieceType::BISHOP,
-            6 => piece_type::PieceType::KNIGHT,
-            7 => piece_type::PieceType::ROOK,
-            _ => piece_type::PieceType::PAWN,
-        }
-    } else {
-        match i {
+fn get_piece_type(i: i32, color: Color) -> piece_type::PieceType {
+    match color {
+        Color::WHITE => match i {
             8 => piece_type::PieceType::ROOK,
             9 => piece_type::PieceType::KNIGHT,
             10 => piece_type::PieceType::BISHOP,
@@ -54,7 +20,18 @@ fn get_piece_type(i: i32, is_white: bool) -> piece_type::PieceType {
             14 => piece_type::PieceType::KNIGHT,
             15 => piece_type::PieceType::ROOK,
             _ => piece_type::PieceType::PAWN,
-        }
+        },
+        Color::BLACK => match i {
+            0 => piece_type::PieceType::ROOK,
+            1 => piece_type::PieceType::KNIGHT,
+            2 => piece_type::PieceType::BISHOP,
+            3 => piece_type::PieceType::QUEEN,
+            4 => piece_type::PieceType::KING,
+            5 => piece_type::PieceType::BISHOP,
+            6 => piece_type::PieceType::KNIGHT,
+            7 => piece_type::PieceType::ROOK,
+            _ => piece_type::PieceType::PAWN,
+        },
     }
 }
 
@@ -72,5 +49,19 @@ impl Piece {
         const FILE_EXT: &str = ".png";
 
         folder + &color_delimeter + SEPARATER + &piece_string + FILE_EXT
+    }
+
+    // TODO write some tests for this
+    pub(crate) fn init_pieces(color: Color) -> Vec<Piece> {
+        (0..16)
+            .map(|i| Piece {
+                square_name: match color {
+                    Color::WHITE => square_name::SquareName::new(i + 48),
+                    Color::BLACK => square_name::SquareName::new(i),
+                },
+                color: color,
+                piece_type: get_piece_type(i, color),
+            })
+            .collect()
     }
 }

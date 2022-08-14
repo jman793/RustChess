@@ -1,10 +1,13 @@
+mod color;
 mod common;
+mod game_state;
 mod piece;
 mod piece_type;
 mod renderer;
 mod square;
 mod square_name;
 
+use common::constants;
 use sdl2::{
     event::Event,
     image::{InitFlag, LoadTexture},
@@ -13,34 +16,18 @@ use sdl2::{
     render::Texture,
 };
 
-
-fn find_square_from_name(squares: &Vec<square::Square>, square_name: square_name::SquareName) -> Option<square::Square> {
-    let mut matched_square: Option<square::Square> = None;
-    for square in squares.iter() {
-        match square.square_name == square_name {
-            true => matched_square = Some(*square),
-            false => continue,
-        }
-    }
-
-    matched_square
-}
-
 fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     let _image_context = sdl2::image::init(InitFlag::PNG | InitFlag::JPG)?;
 
-    let mut squares: Vec<square::Square> = square::initialize_squares();
-
-    let mut white_pieces: Vec<piece::Piece> = piece::init_pieces(true);
-    let mut black_pieces: Vec<piece::Piece> = piece::init_pieces(false);
+    let mut game_state: game_state::GameState = game_state::GameState::init_game();
 
     let window = video_subsystem
         .window(
             "rust_chess",
-            common::WINDOW_SIDE.try_into().unwrap(),
-            common::WINDOW_SIDE.try_into().unwrap(),
+            constants::WINDOW_SIDE.try_into().unwrap(),
+            constants::WINDOW_SIDE.try_into().unwrap(),
         )
         .position_centered()
         .build()
@@ -55,15 +42,17 @@ fn main() -> Result<(), String> {
     let mut textures: Vec<Texture> = Vec::new();
     textures.push(texture_creator.load_texture("assets/board1.png")?);
 
-    for piece in white_pieces.iter() {
+    for piece in game_state.white_pieces.iter() {
         textures.push(texture_creator.load_texture(piece.get_filename())?);
     }
-    for piece in black_pieces.iter() {
+    for piece in game_state.black_pieces.iter() {
         textures.push(texture_creator.load_texture(piece.get_filename())?);
     }
 
+    // Ideally its time to abstract out your game state,
+    // Squares, and both piece vectors as well as turn and move counts
+    // This would remove most of these variables below and a lot of logical implementation
     let mut events = sdl_context.event_pump()?;
-    let mut is_square_selected: bool = false;
 
     // Typical loop goes input(), update(), render()
     'run_loop: loop {
@@ -81,18 +70,18 @@ fn main() -> Result<(), String> {
                     mouse_btn: MouseButton::Left,
                     ..
                 } => {
-                    if is_square_selected {
-                        is_square_selected = false;
+                    if game_state.is_square_selected {
+                        let moved_square_name = square::select_square_from_position(
+                            events.mouse_state().x(),
+                            events.mouse_state().y(),
+                        );
+                        game_state.make_move(moved_square_name);
                     } else {
                         let selected_square_name = square::select_square_from_position(
                             events.mouse_state().x(),
                             events.mouse_state().y(),
                         );
-                        let selected_square: square::Square = find_square_from_name(&squares, selected_square_name)
-                        .expect("Could not find square. This should not happen");
-                        if selected_square.is_occupied {
-                            is_square_selected = true;
-                        }
+                        game_state.select_square(selected_square_name);
                     }
                 }
                 _ => {}
@@ -100,7 +89,7 @@ fn main() -> Result<(), String> {
         }
 
         //render
-        renderer::render(&mut canvas, &textures, &white_pieces, &black_pieces)?;
+        renderer::render(&mut canvas, &textures, &game_state)?;
     }
     Ok(())
 }
