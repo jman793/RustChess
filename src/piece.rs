@@ -1,36 +1,37 @@
-use crate::{color::Color, piece_type, square_name};
+
+use crate::{color::Color, piece_type::PieceType, square_name::{self, SquareName}, game_state::GameState};
 
 #[derive(Copy, Clone)]
 pub struct Piece {
     pub square_name: square_name::SquareName,
-    color: Color,
-    piece_type: piece_type::PieceType,
+    pub color: Color,
+    piece_type: PieceType,
 }
 
 // TODO write some tests for this
-fn get_piece_type(i: i32, color: Color) -> piece_type::PieceType {
+fn get_piece_type(i: i32, color: Color) -> PieceType {
     match color {
         Color::WHITE => match i {
-            8 => piece_type::PieceType::ROOK,
-            9 => piece_type::PieceType::KNIGHT,
-            10 => piece_type::PieceType::BISHOP,
-            11 => piece_type::PieceType::QUEEN,
-            12 => piece_type::PieceType::KING,
-            13 => piece_type::PieceType::BISHOP,
-            14 => piece_type::PieceType::KNIGHT,
-            15 => piece_type::PieceType::ROOK,
-            _ => piece_type::PieceType::PAWN,
+            8 => PieceType::ROOK,
+            9 => PieceType::KNIGHT,
+            10 => PieceType::BISHOP,
+            11 => PieceType::QUEEN,
+            12 => PieceType::KING,
+            13 => PieceType::BISHOP,
+            14 => PieceType::KNIGHT,
+            15 => PieceType::ROOK,
+            _ => PieceType::PAWN,
         },
         Color::BLACK => match i {
-            0 => piece_type::PieceType::ROOK,
-            1 => piece_type::PieceType::KNIGHT,
-            2 => piece_type::PieceType::BISHOP,
-            3 => piece_type::PieceType::QUEEN,
-            4 => piece_type::PieceType::KING,
-            5 => piece_type::PieceType::BISHOP,
-            6 => piece_type::PieceType::KNIGHT,
-            7 => piece_type::PieceType::ROOK,
-            _ => piece_type::PieceType::PAWN,
+            0 => PieceType::ROOK,
+            1 => PieceType::KNIGHT,
+            2 => PieceType::BISHOP,
+            3 => PieceType::QUEEN,
+            4 => PieceType::KING,
+            5 => PieceType::BISHOP,
+            6 => PieceType::KNIGHT,
+            7 => PieceType::ROOK,
+            _ => PieceType::PAWN,
         },
     }
 }
@@ -63,5 +64,45 @@ impl Piece {
                 piece_type: get_piece_type(i, color),
             })
             .collect()
+    }
+
+    // I am not in love with the fact that this function touches the game state to get this done
+    // This could be refactored to probably be much cleaner
+    // Maybe make the various piece types a "trait" so that getting possible moves is one method call
+    pub fn get_legal_moves(&self, game_state: &GameState) -> Vec<SquareName> {
+        let mut legal_moves: Vec<SquareName> = Vec::new();
+        let mut possible_moves: Vec<SquareName>;
+
+        match self.piece_type {
+            PieceType::KNIGHT => todo!(),
+            PieceType::QUEEN => todo!(),
+            PieceType::PAWN => {
+                possible_moves = PieceType::get_pawn_moves(self);
+
+                for piece_move in possible_moves.iter() {
+                    if piece_move.file == self.square_name.file {
+                        if !game_state.squares[piece_move].is_occupied {
+                            legal_moves.push(*piece_move);
+                        }
+                    }
+                    else {
+                        if game_state.is_square_occupied_by_opposite_color(*piece_move) {
+                            legal_moves.push(*piece_move);
+                        }
+                    }
+                }
+            },
+            PieceType::BISHOP => todo!(),
+            PieceType::ROOK => todo!(),
+            PieceType::KING => todo!(),
+        }
+
+
+
+
+
+        
+
+        return legal_moves;
     }
 }

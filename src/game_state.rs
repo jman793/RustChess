@@ -4,7 +4,7 @@ use crate::{
     color::{self, Color},
     piece::{self, Piece},
     square::Square,
-    square_name::{self, SquareName},
+    square_name::SquareName,
 };
 
 pub struct GameState {
@@ -38,7 +38,50 @@ impl GameState {
     pub fn make_move(&mut self, square_name: SquareName) {
         //(is valid move check here be sure to check if the piece is moving at all :-D )
 
-        self.move_piece(square_name);
+        if self.is_move_legal(square_name){
+            self.move_piece(square_name);
+        }
+    }
+
+    pub fn is_move_legal(&self, square_name: SquareName) -> bool {
+        let legal_moves: Vec<SquareName>;
+
+        match self.move_color {
+            Color::WHITE => {
+                let piece = self.white_pieces[self.selected_piece_index];
+                legal_moves = piece.get_legal_moves(self);
+            }
+            Color::BLACK => {
+                let piece: Piece = self.black_pieces[self.selected_piece_index];
+                legal_moves = piece.get_legal_moves(self); 
+            }
+        }
+        println!("{}", legal_moves.contains(&square_name));
+        return legal_moves.contains(&square_name);
+    }
+
+    pub fn is_square_occupied_by_opposite_color(&self, square_name: SquareName) -> bool {
+        if !self.squares[&square_name].is_occupied {
+            return false;
+        }
+
+        match self.move_color {
+            Color::WHITE => {
+                for black_piece in self.black_pieces.iter() {
+                    if black_piece.square_name == square_name {
+                        return true;
+                    }
+                }
+            }
+            Color::BLACK => {
+                for white_piece in self.white_pieces.iter() {
+                    if white_piece.square_name == square_name {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     fn move_piece(&mut self, square_name: SquareName) {
@@ -64,7 +107,7 @@ impl GameState {
         self.is_square_selected = false;
     }
 
-    fn find_piece_on_square(&self, square_name: square_name::SquareName) -> usize {
+    fn find_piece_on_square(&self, square_name: SquareName) -> usize {
         match self.move_color {
             Color::WHITE => {
                 for (index, white_piece) in self.white_pieces.iter().enumerate() {
